@@ -9,11 +9,14 @@
 #include "coin.hh"
 #include "finder.hh"
 
+/**
+ * @brief Clase que gestiona el funcionamiento del juego.
+ */
 class Game {
     std::vector<Coin> coins_;
-    int coin_count_ = 0;
+    int count_coin = 0;
 
-    Mario                 mario_;
+    Mario mario_;
     std::vector<Platform> platforms_;
 
     bool finished_, paused_;
@@ -21,7 +24,6 @@ class Game {
     Finder<Platform> platform_finder_;
     Finder<Coin> coin_finder_;
 
-    // Cambiado a punteros constantes para evitar errores de asignación
     std::set<const Platform*> visible_platforms_;
     std::set<const Coin*> visible_coins_;
 
@@ -29,19 +31,39 @@ class Game {
     void update_objects(pro2::Window& window);
     void update_camera(pro2::Window& window);
 
- public:
+public:
+    /**
+     * @brief Constructora que inicializa el juego con el tamaño de ventana dado.
+     * @param width Anchura de la ventana del juego.
+     * @param height Altura de la ventana del juego.
+     */
     Game(int width, int height);
 
+    /**
+     * @brief Actualiza el estado general del juego.
+     */
     void update(pro2::Window& window);
+
+    /**
+     * @brief Dibuja el juego en la ventana.
+     */
     void paint(pro2::Window& window);
 
+    /**
+     * @brief Indica si el juego ha finalizado.
+     */
     bool is_finished() const {
         return finished_;
     }
-     bool is_paused() const {
+
+    /**
+     * @brief Indica si el juego está pausado.
+     */
+    bool is_paused() const {
         return paused_;
     }
- private:
+
+private:
     static constexpr int sky_blue = 0x5c94fc;
 };
 

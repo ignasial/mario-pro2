@@ -42,8 +42,13 @@ void paint_sprite(pro2::Window&                        window,
                   const std::vector<std::vector<int>>& sprite,
                   bool                                 mirror);
 
-
-bool rects_overlap(const pro2::Rect& a, const pro2::Rect& b);
+/**
+ * @brief Comprueba si dos rectángulos colisionan.
+ *
+ * @param a Primer rectángulo.
+ * @param b Segundo rectángulo.
+ */
+bool rects_solapan(const pro2::Rect& a, const pro2::Rect& b);
 
 }  // namespace pro2
 #endif

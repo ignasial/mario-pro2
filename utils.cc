@@ -30,8 +30,7 @@ void paint_sprite(pro2::Window&              window,
     }
 }
 
-bool rects_overlap(const Rect& a, const Rect& b) {
-    // Cap contacte si un és completament a l'esquerra, dreta, dalt o baix de l'altre
+bool rects_solapan(const Rect& a, const Rect& b) {
     bool separated_horizontal = (a.right <= b.left) || (b.right <= a.left);
     bool separated_vertical   = (a.bottom <= b.top) || (b.bottom <= a.top);
 

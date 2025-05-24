@@ -1,6 +1,7 @@
 #include "game.hh"
 #include "utils.hh"
 #include "geometry.hh"
+
 using namespace pro2;
 using namespace std;
 
@@ -18,17 +19,19 @@ Game::Game(int width, int height)
       },
       paused_(false),
       finished_(false) {
-    for (int i = 1; i < 200000; i++) {
+
+    for (int i = 1; i < 40000; i++) {
         platforms_.push_back(Platform(250 + i * 200, 400 + i * 200, 150, 161));
-        coins_.push_back(Coin({300 + i * 200, 150}));
+        coins_.push_back(Coin({300 + i *200, 150}));
+       
     }
 
-    // Afegim totes les plataformes al finder
+    //Añadimos las plataformas al finder
     for (Platform& platform : platforms_) {
         platform_finder_.add(&platform);
     }
     
-    // Afegim totes les maduixes al finder
+    //Hacemos lo mismo con las monedas
     for (Coin& coin : coins_) {
         coin_finder_.add(&coin);
     }
@@ -46,20 +49,20 @@ void Game::process_keys(pro2::Window& window) {
 }
 
 void Game::update(pro2::Window& window) {
-    // Creem un rectangle amb l'area visible actual
+    //Creamos rectangulo con el area visible actual
     Pt camera_center = window.camera_center();
     Rect visible_area = {
-        camera_center.x - window.width() / 2,  // left
-        camera_center.y - window.height() / 2, // top
-        camera_center.x + window.width() / 2,  // right
-        camera_center.y + window.height() / 2  // bottom
+        camera_center.x - window.width() / 2,  
+        camera_center.y - window.height() / 2, 
+        camera_center.x + window.width() / 2,  
+        camera_center.y + window.height() / 2  
     };
 
-    // Asignación directa, tipos coinciden ahora
     visible_platforms_ = platform_finder_.query(visible_area);
     visible_coins_ = coin_finder_.query(visible_area);
 
     process_keys(window);
+
     if (!paused_) {
         update_objects(window);
         update_camera(window);
@@ -69,24 +72,25 @@ void Game::update(pro2::Window& window) {
 void Game::update_objects(pro2::Window& window) {
      Pt camera_center = window.camera_center();
       Rect visible_area = {
-        camera_center.x - window.width() / 2,  // left
-        camera_center.y - window.height() / 2, // top
-        camera_center.x + window.width() / 2,  // right
-        camera_center.y + window.height() / 2  // bottom
+        camera_center.x - window.width() / 2,  
+        camera_center.y - window.height() / 2, 
+        camera_center.x + window.width() / 2,  
+        camera_center.y + window.height() / 2  
     };
 
     mario_.update(window, platforms_);
 
     auto const_visible = coin_finder_.query(visible_area);
     visible_coins_.clear();
+
     for (const Coin* s : const_visible) {
         Coin* non_const_s = const_cast<Coin*>(s);
         non_const_s->update(window);
 
-        if (!non_const_s->is_collected() && rects_overlap(mario_.get_rect(), non_const_s->get_rect())) {
+        if (!non_const_s->is_collected() && rects_solapan(mario_.get_rect(), non_const_s->get_rect())) {
             non_const_s->collect();
-            ++coin_count_;
-            cout << "moneda recollida, tens " << coin_count_ << " monedes" << endl;
+            ++count_coin;
+            cout << "Moneda recollida, tens " << count_coin << " monedes" << endl;
         }
 
     visible_coins_.insert(non_const_s);
@@ -107,17 +111,9 @@ void Game::update_camera(pro2::Window& window) {
     const int top = cam.y - window.height() / 4;
     const int bottom = cam.y + window.height() / 4;
 
-    int dx = 0, dy = 0;
-    if (pos.x > right) {
-        dx = pos.x - right;
-    } else if (pos.x < left) {
-        dx = pos.x - left;
-    }
-    if (pos.y < top) {
-        dy = pos.y - top;
-    } else if (pos.y > bottom) {
-        dy = pos.y - bottom;
-    }
+    //Calculamos el movimiento horizontal/vertical de la camara
+    int dx = (pos.x > right) ? (pos.x - right) : (pos.x < left ? (pos.x - left) : 0);
+    int dy = (pos.y < top) ? (pos.y - top) : (pos.y > bottom ? (pos.y - bottom) : 0);
 
     window.move_camera({dx, dy});
 }

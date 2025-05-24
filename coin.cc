@@ -45,14 +45,18 @@ const vector<vector<vector<int>>> Coin::coin_sprites_ = {
 void Coin::paint(pro2::Window& window) const {
     if (collected_) return;
 	
+    //Posicion superior izquierda para centrar el sprite respecto a pos_
 	const Pt top_left = {pos_.x - amplada/2, pos_.y - altura - 1};
+
     int frame = (window.frame_count() / 10) % coin_sprites_.size();
 	vector<vector<int>> actual_sprite = coin_sprites_[frame];
+
     paint_sprite(window, top_left, actual_sprite, false);
 }
 
 void Coin::update(pro2::Window& window) {
-    float movement = sin(window.frame_count() * frequency) * amplitude;
+    //Movimiento vertical sinusoidal
+    double movement = sin(window.frame_count() * frequency) * amplitude;
     pos_.y = base_pos_.y + movement;
 }
 
