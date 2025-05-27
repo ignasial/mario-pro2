@@ -6,6 +6,12 @@
 #include "platform.hh"
 #include "window.hh"
 
+namespace pro2 {
+    struct Pt;
+    struct Rect;
+    class Window;
+}
+
 class Mario {
  private:
     pro2::Pt pos_, last_pos_;
@@ -14,12 +20,15 @@ class Mario {
     int      accel_time_ = 0;
 
     bool grounded_ = false;
-	bool looking_left_ = false;
+    bool looking_left_ = false;
 
-	void apply_physics_();
-	
+    bool alive_ = true;
+    pro2::Pt initial_pos_;  // posición inicial para respawn
+
+    void apply_physics_();
+
  public:
-    Mario(pro2::Pt pos) : pos_(pos), last_pos_(pos) {}
+    Mario(pro2::Pt pos);
 
     void paint(pro2::Window& window) const;
 
@@ -48,10 +57,22 @@ class Mario {
 
     pro2::Rect get_rect() const;
 
-
     void jump();
 
     void update(pro2::Window& window, const std::vector<Platform>& platforms);
+
+    void kill() {
+        alive_ = false;
+    }
+
+    bool is_alive() const {
+        return alive_;
+    }
+
+    void respawn() {
+        pos_ = {100, 100};
+        alive_ = true;
+    }
 
  private:
     static const std::vector<std::vector<int>> mario_sprite_normal_;

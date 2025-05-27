@@ -12,8 +12,11 @@ const int h = pro2::black;
 const int g = 0xaaaaaa;
 const int w = 0x8d573c;
 
-const int Width  = 12;  // ample de l’sprite
-const int Height = 16;  // alçada de l’sprite
+const int Width  = 12;  // ancho del sprite
+const int Height = 16;  // alto del sprite
+
+// Constructor: inicializa la posición y variables relacionadas
+Mario::Mario(pro2::Pt pos) : pos_(pos), last_pos_(pos), initial_pos_(pos) {}
 
 // clang-format off
 const vector<vector<int>> Mario::mario_sprite_normal_ = {
@@ -47,10 +50,7 @@ void Mario::apply_physics_() {
         accel_.y = 0;
     }
 
-    // Always falling to check if we aren't grounded
-    // If we are, we will return to the same spot
-
-    const int gravity = 1;  // gravity = 1 pixel / frame_time^2
+    const int gravity = 1;  // gravedad = 1 pixel / frame_time^2
     speed_.y += gravity;
 
     if (accel_time_ > 0) {
@@ -76,7 +76,6 @@ void Mario::update(pro2::Window& window, const vector<Platform>& platforms) {
         jump();
     }
 
-    // Velocitat horitzontal
     speed_.x = 0; 
     if (window.is_key_down(Keys::Left)) {
         speed_.x = -4;
@@ -87,10 +86,8 @@ void Mario::update(pro2::Window& window, const vector<Platform>& platforms) {
         looking_left_ = speed_.x < 0;
     }
 
-    // Apply acceleration and speed
     apply_physics_();
 
-    // Check position
     set_grounded(false);
 
     for (const Platform& platform : platforms) {
@@ -102,5 +99,5 @@ void Mario::update(pro2::Window& window, const vector<Platform>& platforms) {
 }
 
 Rect Mario::get_rect() const {
-    return {pos_.x-Width/2, pos_.y-Height, pos_.x+Width/2, pos_.y};
+    return {pos_.x - Width/2, pos_.y - Height, pos_.x + Width/2, pos_.y};
 }
