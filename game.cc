@@ -9,9 +9,10 @@ using namespace pro2;
 using namespace std;
 
 Game::Game(int width, int height)
-    : mario_({width / 2, 150}),
+    : mario_({100, 100}),
       platforms_{
-          Platform(0, 200, 256, 355),
+          //Platform(0, 300, 256, 355),
+          Platform(50, 150, 100, 120),
       },
       enemies_{
           Enemy({200, 210}, 350, 450)
@@ -80,9 +81,9 @@ void Game::update_objects(pro2::Window& window) {
     }
 
     for (Enemy& enemy : enemies_) {
-        if (enemy.is_alive() && mario_.is_alive() && rects_solapan(enemy.get_rect(), mario_.get_rect())) {
+        if ((enemy.is_alive() && mario_.is_alive() && rects_solapan(enemy.get_rect(), mario_.get_rect())) || (mario_.get_rect().bottom == 400)) {
             mario_.kill();
-            cout << "Mario ha muerto!" << endl;
+            cout << "Mario ha muerto. Vidas restantes: " << lifes << endl;
         }
     }
 
@@ -101,7 +102,7 @@ void Game::update_objects(pro2::Window& window) {
         if (!non_const_s->is_collected() && rects_solapan(mario_.get_rect(), non_const_s->get_rect())) {
             non_const_s->collect();
             ++count_coin;
-            cout << "Moneda recogida, tienes " << count_coin << " monedas" << endl;
+            cout << "Moneda recogida. Cantidad total: " << count_coin << endl;
         }
 
         visible_coins_.insert(non_const_s);
@@ -144,11 +145,11 @@ void Game::paint(pro2::Window& window) {
 void Game::is_death() {
     if (!mario_.is_alive()) {
         lifes--;
-        if (lifes > 0) {
+        if (lifes >= 0) {
             mario_.respawn();
         } else {
             finished_ = true;
-            cout << "Game over" << endl;
+            cout << "GAME OVER" << endl;
         }
     }
 }
