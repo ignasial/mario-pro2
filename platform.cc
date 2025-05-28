@@ -3,7 +3,7 @@ using namespace std;
 
 using pro2::Color;
 
-const int b = 0xc84d0b;
+const int b = 0xc84d0b; 
 const int _ = 0;
 
 // clang-format off

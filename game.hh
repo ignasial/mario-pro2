@@ -23,10 +23,9 @@ class Game {
     std::set<const Platform*> visible_platforms_;
     std::set<const Coin*> visible_coins_;
 
-    bool paused_;
-    bool finished_;
+    bool paused_, finished_, first_update_ = true;
 
-    int lifes = 3;  // vidas
+    int lifes;
 
     int count_coin = 0;
 

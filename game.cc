@@ -15,7 +15,7 @@ Game::Game(int width, int height)
           Platform(50, 150, 100, 120),
       },
       enemies_{
-          Enemy({200, 210}, 350, 450)
+          Enemy({100, 257}, 350, 450)
       },
       coins_{
           Coin({200, 200}),
@@ -24,6 +24,7 @@ Game::Game(int width, int height)
       },
       paused_(false),
       finished_(false),
+      first_update_(true),
       lifes(3),
       count_coin(0) {
 
@@ -53,6 +54,14 @@ void Game::process_keys(pro2::Window& window) {
 }
 
 void Game::update(pro2::Window& window) {
+    if (first_update_) {
+        Pt mario_pos = mario_.pos();
+        Pt cam = window.camera_center();
+        int dx = mario_pos.x - cam.x;
+        int dy = mario_pos.y - cam.y;
+        window.move_camera({dx, dy});
+        first_update_ = false;
+    }
     Pt camera_center = window.camera_center();
     Rect visible_area = {
         camera_center.x - window.width() / 2,
@@ -81,10 +90,14 @@ void Game::update_objects(pro2::Window& window) {
     }
 
     for (Enemy& enemy : enemies_) {
-        if ((enemy.is_alive() && mario_.is_alive() && rects_solapan(enemy.get_rect(), mario_.get_rect())) || (mario_.get_rect().bottom == 400)) {
+        if ((enemy.is_alive() && mario_.is_alive() && rects_solapan(enemy.get_rect(), mario_.get_rect()))) {
             mario_.kill();
             cout << "Mario ha muerto. Vidas restantes: " << lifes << endl;
         }
+    }
+    if (mario_.get_rect().bottom >= 500) {
+        mario_.kill();
+        cout << "Mario ha muerto. Vidas restantes: " << lifes << endl;
     }
 
     visible_coins_.clear();
@@ -94,6 +107,7 @@ void Game::update_objects(pro2::Window& window) {
         window.camera_center().x + window.width() / 2,
         window.camera_center().y + window.height() / 2
     });
+
 
     for (const Coin* s : const_visible) {
         Coin* non_const_s = const_cast<Coin*>(s);

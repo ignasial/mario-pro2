@@ -14,7 +14,7 @@ class Enemy {
     bool alive_;
 
     static constexpr int Width = 12;
-    static constexpr int Height = 1;
+    static constexpr int Height = 10;
 
     public:
     Enemy(pro2::Pt start_pos, int left_limit, int right_limit);
