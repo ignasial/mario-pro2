@@ -68,9 +68,15 @@ void Game::update(pro2::Window& window) {
 
     visible_platforms_ = platform_finder_.query(visible_area);
     visible_coins_ = coin_finder_.query(visible_area);
-    visible_enemies_.clear();
 
     process_keys(window);
+
+    // Actualizamos visible_enemies_ siempre para pintar incluso en pausa
+    visible_enemies_.clear();
+    auto const_visible_enemies = enemy_finder_.query(visible_area);
+    for (Enemy const* e : const_visible_enemies) {
+        visible_enemies_.insert(const_cast<Enemy*>(e));
+    }
 
     if (!paused_ && !finished_) {
         update_objects(window);
@@ -111,22 +117,17 @@ void Game::update_objects(pro2::Window& window) {
         visible_coins_.insert(coin_nc);
     }
 
-    // Usamos enemy_finder_ para mejorar eficiencia con muchos enemigos
-    auto const_visible_enemies = enemy_finder_.query(visible_area);
-
-    // Para eliminar enemigos muertos mientras iteramos usaremos iterador manual
-    for (auto it = const_visible_enemies.begin(); it != const_visible_enemies.end(); ) {
-        Enemy* enemy_nc = const_cast<Enemy*>(*it);
+    // Actualizamos enemigos vivos y eliminamos muertos
+    auto it = enemies_.begin();
+    while (it != enemies_.end()) {
+        Enemy* enemy_nc = &(*it);
         enemy_nc->update(window);
 
         if (!enemy_nc->is_alive()) {
             enemy_finder_.remove(enemy_nc);
-            enemies_.remove_if([enemy_nc](const Enemy& e) { return &e == enemy_nc; });
-            it = const_visible_enemies.erase(it);  // const_visible_enemies es un set, no modificable, mejor evitar modificar aquí
-            // Mejor ir a un vector o manejar distinto, o marcar para borrar después
+            it = enemies_.erase(it);
         } else {
-            visible_enemies_.insert(enemy_nc);
-
+            // Daño al tocar un enemigo
             if (rects_solapan(enemy_nc->get_rect(), mario_.get_rect())) {
                 reset_mario();
                 return;
@@ -135,7 +136,6 @@ void Game::update_objects(pro2::Window& window) {
         }
     }
 }
-
 
 void Game::update_camera(pro2::Window& window) {
     const Pt pos = mario_.pos();
