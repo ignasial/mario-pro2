@@ -13,39 +13,45 @@
 #include "finder.hh"
 #include "enemy.hh"
 #include "geometry.hh" 
+#include "checkpoint.hh"
 
 class Game {
-    std::list<Coin> coins_;
-    int count_coin = 0;
-
+    
+   
     Mario mario_;
     pro2::Pt initial_position_;
 
+
+    std::list<Coin> coins_;
     std::vector<Platform> platforms_;
-
     std::stack<int> lives_;
-    bool game_over_= false;
-
     std::list<Enemy> enemies_;
 
     Finder<Platform> platform_finder_;
     Finder<Coin> coin_finder_;
     Finder<Enemy> enemy_finder_;
 
-    bool finished_, paused_;
-
     std::set<const Platform*> visible_platforms_;
     std::set<const Coin*> visible_coins_;
     std::set<const Enemy*> visible_enemies_;
 
+    Checkpoint* root_checkpoint_ = nullptr;
+    Checkpoint* current_checkpoint_ = nullptr;
+
+    bool finished_, paused_;
+    int count_coin = 0;
+ 
     void process_keys(pro2::Window& window);
     void update_objects(pro2::Window& window);
     void update_camera(pro2::Window& window);
-    void reset_mario();
+    void reset_mario(pro2::Window& window);
 
 public:
     Game(int width, int height, int enemy_count);
 
+    ~Game();
+    void add_checkpoint(int x, int y);
+    void paint_checkpoints(pro2::Window& window) const;
     void update(pro2::Window& window);
     void paint(pro2::Window& window);
 

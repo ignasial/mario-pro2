@@ -3,29 +3,28 @@
 #include "utils.hh"
 
 // Colores
-const int _ = -1;        // transparente
-const int r = 0xff0000;  // rojo
-const int k = 0x000000;  // negro
-const int w = 0xffffff;  // blanco
+const int _ = -1;      
+const int r = pro2::red; 
+const int b = pro2::black;  
+const int w = pro2::white;  
 
 const std::vector<std::vector<int>> Enemy::enemy_sprite_ = {
-    {_, _, _, r, r, r, r, r, _, _, _, _},
-    {_, _, r, r, r, r, r, r, r, r, _, _},
-    {_, r, r, k, k, r, r, k, k, r, r, _},
-    {r, r, k, w, k, r, r, k, w, k, r, r},
-    {r, r, k, k, k, k, k, k, k, k, r, r},
-    {r, r, r, k, r, r, r, r, k, r, r, r},
-    {_, r, r, r, r, r, r, r, r, r, r, _},
-    {_, _, r, r, r, r, r, r, r, r, _, _},
-    {_, _, _, r, r, r, r, r, r, _, _, _},
-    {_, _, _, k, k, k, k, k, k, _, _, _},
-    {_, _, k, k, k, k, k, k, k, k, _, _},
-    {_, k, k, _, _, _, _, _, _, k, k, _},
-    {k, k, _, _, _, _, _, _, _, _, k, k},
-    {_, _, _, _, _, _, _, _, _, _, _, _},
-    {_, _, _, _, _, _, _, _, _, _, _, _},
-    {_, _, _, _, _, _, _, _, _, _, _, _},
+   
+    {_, _, _, _, _, b, b, b, b, _, _, _, _, _, _, _},
+    {_, _, _, _, b, r, r, r, r, b, _, _, _, _, _, _},
+    {_, _, _, b, r, r, r, r, r, r, b, _, _, _, _, _},
+    {_, _, b, b, b, r, r, r, r, b, b, b, _, _, _, _},
+    {_, b, r, w, b, b, b, b, b, b, w, r, b, _, _, _},
+    {_, b, r, w, b, w, b, b, w, b, w, r, b, _, _, _},
+    {b, r, r, w, w, w, r, r, w, w, w, r, r, b, _, _},
+    {b, r, r, r, r, r, r, r, r, r, r, r, r, b, _, _},
+    {b, r, r, r, r, r, r, r, r, r, r, r, r, b, _, _},
+    {_, b, b, b, b, b, b, b, b, b, b, b, b, _, _, _},
+    {b, b, b, b, b, _, _, _, _, b, b, b, b, b, _, _},
+    {b, b, b, b, b, _, _, _, _, b, b, b, b, b, _, _},
 };
+
+
 
 Enemy::Enemy(pro2::Pt pos, int left_limit, int right_limit)
     : pos_(pos), speed_({2, 0}), left_limit_(left_limit), right_limit_(right_limit)

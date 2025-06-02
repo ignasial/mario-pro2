@@ -1,24 +1,23 @@
-Practica PRO2-Ignasi Albert
+PRACTICA PRO2-IGNASI ALBERT HOHENHORST 
 
 
-nuevas clases implementadas:
+Nuevas clases implementadas:
 Enemy:
 coin
+checkpoints
 
 
-contenedores usados:
+Contenedores usados:
 list, para coins y enemy
 stack para lifes
 set para finder
+arboles para checkpoints
 
-falta:arboles, map, queue
-
-
-clases existentes modificadas:
+falta:map, queue
 
 
-jugabilidad y conjunto de teclas:
-Inicio: seleccionar cantidad de enemigos
+Jugabilidad y conjunto de teclas:
+Inicio: seleccionar la cantidad de enemigos
 
-teclas: 
-P para pausar
+Clases existentes modificadas:
+

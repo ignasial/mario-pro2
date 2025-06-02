@@ -6,6 +6,10 @@
 #include "window.hh"
 #include <vector>
 
+
+/**
+ * @brief clase que representa a los enemigos del juego
+ */
 class Enemy {
 private:
     pro2::Pt pos_;
@@ -22,16 +26,30 @@ private:
 public:
     Enemy(pro2::Pt pos, int left_limit, int right_limit);
 
+    /**
+     * @brief actualiza la posicion del enemigo con un movimiento horizontal
+     * @param 
+     */
     void update(pro2::Window& window);
+      /**
+     * @brief pinta el sprite del enemigo
+     */
     void paint(pro2::Window& window) const;
-
+      /**
+     * @brief 
+     */
     bool is_alive() const {
         return alive_;
     }
-
+      /**
+     * @brief
+     */
     pro2::Pt pos() const {
         return pos_;
     }
+      /**
+     * @brief
+     */
     pro2::Rect get_rect() const;
 };
 

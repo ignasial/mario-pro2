@@ -12,12 +12,18 @@ Game::Game(int width, int height, int enemy_count)
           Platform(250, 400, 250, 331),
       },
       coins_{
-        Coin({200, 248}),
+          Coin({200, 248}),
       },
       paused_(false),
       finished_(false),
-      game_over_(false) {
+      count_coin(0),
+      root_checkpoint_(nullptr),
+      current_checkpoint_(nullptr) {
 
+    add_checkpoint(600, 250);
+    add_checkpoint(900, 250);
+
+    current_checkpoint_ = nullptr;  // No tocado aún
     initial_position_ = mario_.pos();
 
     // Inicializa el stack de vidas con 3 vidas (3, 2, 1)
@@ -33,7 +39,7 @@ Game::Game(int width, int height, int enemy_count)
         int base_x = 400 + i * 100;
         int left_limit = base_x - 30;
         int right_limit = base_x + 30;
-        enemies_.emplace_back(Pt{base_x, 252}, left_limit, right_limit);
+        enemies_.emplace_back(Pt{base_x, 255}, left_limit, right_limit);
         enemy_finder_.add(&enemies_.back());
     }
 
@@ -46,6 +52,20 @@ Game::Game(int width, int height, int enemy_count)
     }
 }
 
+Game::~Game() {
+    delete root_checkpoint_;
+}
+
+void Game::add_checkpoint(int x, int y) {
+    Checkpoint* cp = new Checkpoint(x, y);
+    if (root_checkpoint_ == nullptr) {
+        root_checkpoint_ = cp;
+        // No asignar current_checkpoint aquí para no resetear en el inicio
+    } else {
+        root_checkpoint_->insert(cp);
+    }
+}
+
 void Game::process_keys(pro2::Window& window) {
     if (window.is_key_down(Keys::Escape)) {
         finished_ = true;
@@ -53,7 +73,7 @@ void Game::process_keys(pro2::Window& window) {
     }
     if (window.was_key_pressed('P')) {
         paused_ = !paused_;
-        return;
+        cout << (paused_ ? "Juego pausado" : "Juego reanudado") << endl;
     }
 }
 
@@ -71,7 +91,6 @@ void Game::update(pro2::Window& window) {
 
     process_keys(window);
 
-    // Actualizamos visible_enemies_ siempre para pintar incluso en pausa
     visible_enemies_.clear();
     auto const_visible_enemies = enemy_finder_.query(visible_area);
     for (Enemy const* e : const_visible_enemies) {
@@ -95,10 +114,23 @@ void Game::update_objects(pro2::Window& window) {
 
     mario_.update(window, platforms_);
 
-    // Daño por caída al caer por debajo de Y=1000
+    // SOLO actualizar current_checkpoint_ si Mario colisiona con algún checkpoint
+    if (root_checkpoint_ != nullptr) {
+        Checkpoint* closest_cp = root_checkpoint_->find_closest(mario_.pos().x, mario_.pos().y);
+        if (closest_cp != nullptr) {
+            // Suponiendo que el checkpoint tiene un rectángulo o área para colisión
+            Rect mario_rect = mario_.get_rect();
+            Rect cp_rect = closest_cp->get_rect();  // Añade este método en Checkpoint si no existe
+
+            if (rects_solapan(mario_rect, cp_rect)) {
+                current_checkpoint_ = closest_cp;
+            }
+        }
+    }
+
     if (mario_.pos().y > 1000) {
         cout << "¡Has caído! Pierdes una vida." << endl;
-        reset_mario();
+        reset_mario(window);
         return;
     }
 
@@ -117,7 +149,6 @@ void Game::update_objects(pro2::Window& window) {
         visible_coins_.insert(coin_nc);
     }
 
-    // Actualizamos enemigos vivos y eliminamos muertos
     auto it = enemies_.begin();
     while (it != enemies_.end()) {
         Enemy* enemy_nc = &(*it);
@@ -127,10 +158,8 @@ void Game::update_objects(pro2::Window& window) {
             enemy_finder_.remove(enemy_nc);
             it = enemies_.erase(it);
         } else {
-            // Daño al tocar un enemigo
             if (rects_solapan(enemy_nc->get_rect(), mario_.get_rect())) {
-                reset_mario();
-                return;
+                reset_mario(window);
             }
             ++it;
         }
@@ -166,13 +195,31 @@ void Game::paint(pro2::Window& window) {
     for (const Enemy* e : visible_enemies_) {
         e->paint(window);
     }
+    if (root_checkpoint_ != nullptr) {
+        root_checkpoint_->paint(window);
+    }
 
     mario_.paint(window);
 }
 
-void Game::reset_mario() {
-    mario_.set_pos(initial_position_);
+void Game::reset_mario(pro2::Window& window) {
+    Pt respawn_pos = initial_position_;
+    if (current_checkpoint_ != nullptr) {
+        respawn_pos = {current_checkpoint_->x, current_checkpoint_->y};
+ 
+    }
+
+    mario_.set_pos(respawn_pos);
     mario_.reset_speed();
+
+    // Ajustar la cámara para que enfoque al checkpoint (o posición inicial)
+    int cam_x = respawn_pos.x - window.width() / 2;
+    int cam_y = respawn_pos.y - window.height() / 2 - 255;
+
+    if (cam_x < 0) cam_x = 0;
+    if (cam_y < 0) cam_y = 0;
+
+    window.set_camera_topleft({cam_x, cam_y});
 
     if (!lives_.empty()) {
         lives_.pop();
@@ -182,9 +229,6 @@ void Game::reset_mario() {
 
     if (lives_.empty()) {
         finished_ = true;
-        if (!game_over_) {
-            cout << "GAME OVER: No te quedan vidas. Puntuación total: " << count_coin << endl;
-            game_over_ = true;
-        }
+        cout << "GAME OVER: No te quedan vidas. Puntuación total: " << count_coin << endl;
     }
 }
