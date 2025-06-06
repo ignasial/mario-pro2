@@ -1,30 +1,49 @@
 #ifndef GAME_HH
 #define GAME_HH
 
-#include <vector>
-#include <set>
-#include <list>
-#include <stack>
-
 #include "mario.hh"
 #include "platform.hh"
-#include "window.hh"
 #include "coin.hh"
-#include "finder.hh"
 #include "enemy.hh"
-#include "geometry.hh" 
 #include "checkpoint.hh"
+#include "finder.hh"
+#include "message_queue.hh"
+#include <list>
+#include <stack>
+#include <set>
+
+
 
 class Game {
-    
-   
+public:
+    Game(int width, int height, int enemy_count);
+    ~Game();
+
+    void process_keys(pro2::Window& window);
+    void update(pro2::Window& window);
+    void paint(pro2::Window& window);
+
+    void reset_mario(pro2::Window& window);
+
+    bool is_finished() const {
+        return finished_;
+    }
+
+
+
+    std::list<Enemy>& enemies();
+    std::list<Coin>& coins();
+    Finder<Enemy>& enemy_finder();
+    Finder<Coin>& coin_finder();
+
+private:
+    void add_checkpoint(int x, int y);
+    void update_objects(pro2::Window& window);
+    void update_camera(pro2::Window& window);
+
     Mario mario_;
-    pro2::Pt initial_position_;
-
-
-    std::list<Coin> coins_;
     std::vector<Platform> platforms_;
-    std::stack<int> lives_;
+    std::list<Coin> coins_;
     std::list<Enemy> enemies_;
 
     Finder<Platform> platform_finder_;
@@ -32,39 +51,25 @@ class Game {
     Finder<Enemy> enemy_finder_;
 
     std::set<const Platform*> visible_platforms_;
-    std::set<const Coin*> visible_coins_;
-    std::set<const Enemy*> visible_enemies_;
+    std::set<Coin*> visible_coins_;
+    std::set<Enemy*> visible_enemies_;
 
-    Checkpoint* root_checkpoint_ = nullptr;
-    Checkpoint* current_checkpoint_ = nullptr;
+    bool paused_;
+    bool finished_;
 
-    bool finished_, paused_;
-    int count_coin = 0;
- 
-    void process_keys(pro2::Window& window);
-    void update_objects(pro2::Window& window);
-    void update_camera(pro2::Window& window);
-    void reset_mario(pro2::Window& window);
+    std::stack<int> lives_;
+    int count_coin;
 
-public:
-    Game(int width, int height, int enemy_count);
+    Checkpoint* root_checkpoint_;
+    Checkpoint* current_checkpoint_;
 
-    ~Game();
-    void add_checkpoint(int x, int y);
-    void paint_checkpoints(pro2::Window& window) const;
-    void update(pro2::Window& window);
-    void paint(pro2::Window& window);
+    pro2::Pt initial_position_;
 
-    bool is_finished() const {
-        return finished_;
-    }
-
-    bool is_paused() const {
-        return paused_;
-    }
-
-private:
+    MessageQueue message_queue_;
+    
+    int current_frame_;
     static constexpr int sky_blue = 0x5c94fc;
 };
 
-#endif // GAME_HH
+ 
+#endif // namespace pro2

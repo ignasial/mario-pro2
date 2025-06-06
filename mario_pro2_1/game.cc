@@ -1,7 +1,5 @@
 #include "game.hh"
 #include "utils.hh"
-#include <iostream>
-#include <cstdlib>
 
 using namespace pro2;
 using namespace std;
@@ -11,24 +9,17 @@ Game::Game(int width, int height, int enemy_count)
       platforms_{
           Platform(100, 300, 250, 331),
           Platform(0, 200, 250, 331),
-          Platform(250, 400, 250, 331)
+          Platform(250, 400, 250, 331),
       },
       coins_{
-          Coin({200, 248})
+        Coin({200, 248}),
       },
       paused_(false),
-      finished_(false),
-      count_coin(0),
-      root_checkpoint_(nullptr),
-      current_checkpoint_(nullptr),
-      current_frame_(0)
-{
-    add_checkpoint(600, 250);
-    add_checkpoint(900, 250);
+      finished_(false) {
 
-    current_checkpoint_ = nullptr;
     initial_position_ = mario_.pos();
 
+    // Inicializa el stack de vidas con 3 vidas (3, 2, 1)
     for (int i = 0; i < 3; ++i) {
         lives_.push(i);
     }
@@ -41,7 +32,7 @@ Game::Game(int width, int height, int enemy_count)
         int base_x = 400 + i * 100;
         int left_limit = base_x - 30;
         int right_limit = base_x + 30;
-        enemies_.emplace_back(Pt{base_x, 255}, left_limit, right_limit);
+        enemies_.emplace_back(Pt{base_x, 252}, left_limit, right_limit);
         enemy_finder_.add(&enemies_.back());
     }
 
@@ -54,19 +45,6 @@ Game::Game(int width, int height, int enemy_count)
     }
 }
 
-Game::~Game() {
-    delete root_checkpoint_;
-}
-
-void Game::add_checkpoint(int x, int y) {
-    Checkpoint* cp = new Checkpoint(x, y);
-    if (root_checkpoint_ == nullptr) {
-        root_checkpoint_ = cp;
-    } else {
-        root_checkpoint_->insert(cp);
-    }
-}
-
 void Game::process_keys(pro2::Window& window) {
     if (window.is_key_down(Keys::Escape)) {
         finished_ = true;
@@ -74,7 +52,7 @@ void Game::process_keys(pro2::Window& window) {
     }
     if (window.was_key_pressed('P')) {
         paused_ = !paused_;
-        message_queue_.push(paused_ ? "Juego pausado" : "Juego reanudado", 120);
+        return;
     }
 }
 
@@ -88,13 +66,11 @@ void Game::update(pro2::Window& window) {
     };
 
     visible_platforms_ = platform_finder_.query(visible_area);
-    visible_coins_.clear();
-    for (const Coin* c : coin_finder_.query(visible_area)) {
-        visible_coins_.insert(const_cast<Coin*>(c));
-    }
+    visible_coins_ = coin_finder_.query(visible_area);
 
     process_keys(window);
 
+    // Actualizamos visible_enemies_ siempre para pintar incluso en pausa
     visible_enemies_.clear();
     auto const_visible_enemies = enemy_finder_.query(visible_area);
     for (Enemy const* e : const_visible_enemies) {
@@ -104,9 +80,6 @@ void Game::update(pro2::Window& window) {
     if (!paused_ && !finished_) {
         update_objects(window);
         update_camera(window);
-
-        ++current_frame_;
-        message_queue_.update();
     }
 }
 
@@ -121,21 +94,10 @@ void Game::update_objects(pro2::Window& window) {
 
     mario_.update(window, platforms_);
 
-    if (root_checkpoint_ != nullptr) {
-        Checkpoint* closest_cp = root_checkpoint_->find_closest(mario_.pos().x, mario_.pos().y);
-        if (closest_cp != nullptr) {
-            Rect mario_rect = mario_.get_rect();
-            Rect cp_rect = closest_cp->get_rect();
-
-            if (rects_solapan(mario_rect, cp_rect)) {
-                current_checkpoint_ = closest_cp;
-            }
-        }
-    }
-
+    // Daño por caída al caer por debajo de Y=1000
     if (mario_.pos().y > 1000) {
-        message_queue_.push("¡Has caído! Pierdes una vida.", 120);
-        reset_mario(window);
+        cout << "¡Has caído! Pierdes una vida." << endl;
+        reset_mario();
         return;
     }
 
@@ -148,15 +110,13 @@ void Game::update_objects(pro2::Window& window) {
         if (!coin_nc->is_collected() && rects_solapan(mario_.get_rect(), coin_nc->get_rect())) {
             coin_nc->collect();
             ++count_coin;
-            if (!coin_nc->message_shown()) {
-                message_queue_.push("Moneda recogida, tienes " + std::to_string(count_coin) + " monedas.", 120);
-                coin_nc->set_message_shown(true);
-            }
-}
+            cout << "Moneda recogida, tienes " << count_coin << " monedas." << endl;
+        }
 
         visible_coins_.insert(coin_nc);
     }
 
+    // Actualizamos enemigos vivos y eliminamos muertos
     auto it = enemies_.begin();
     while (it != enemies_.end()) {
         Enemy* enemy_nc = &(*it);
@@ -166,8 +126,10 @@ void Game::update_objects(pro2::Window& window) {
             enemy_finder_.remove(enemy_nc);
             it = enemies_.erase(it);
         } else {
+            // Daño al tocar un enemigo
             if (rects_solapan(enemy_nc->get_rect(), mario_.get_rect())) {
-                reset_mario(window);
+                reset_mario();
+                return;
             }
             ++it;
         }
@@ -203,54 +165,26 @@ void Game::paint(pro2::Window& window) {
     for (const Enemy* e : visible_enemies_) {
         e->paint(window);
     }
-    if (root_checkpoint_ != nullptr) {
-        root_checkpoint_->paint(window);
-    }
 
     mario_.paint(window);
-
 }
 
-void Game::reset_mario(pro2::Window& window) {
-    Pt respawn_pos = initial_position_;
-    if (current_checkpoint_ != nullptr) {
-        respawn_pos = {current_checkpoint_->x, current_checkpoint_->y};
-    }
-
-    mario_.set_pos(respawn_pos);
+void Game::reset_mario() { //centrar camara como al principio que queda fatal
+    mario_.set_pos(initial_position_);
     mario_.reset_speed();
 
-    int cam_x = respawn_pos.x - window.width() / 2;
-    int cam_y = respawn_pos.y - window.height() / 2 - 255;
-    if (cam_x < 0) cam_x = 0;
-    if (cam_y < 0) cam_y = 0;
-
-    window.set_camera_topleft({cam_x, cam_y});
 
     if (!lives_.empty()) {
         lives_.pop();
     }
 
-    message_queue_.push("¡Has perdido una vida! Vidas restantes: " + std::to_string(lives_.size()), 120);
+    cout << "¡Has perdido una vida! Vidas restantes: " << lives_.size() << endl;
 
     if (lives_.empty()) {
         finished_ = true;
-        message_queue_.push("GAME OVER: No te quedan vidas. Puntuación total: " + std::to_string(count_coin), 240);
+        
+        cout << "GAME OVER: No te quedan vidas. Puntuación total: " << count_coin << endl;
+
+        
     }
-}
-
-std::list<Enemy>& Game::enemies() {
-    return enemies_;
-}
-
-std::list<Coin>& Game::coins() {
-    return coins_;
-}
-
-Finder<Enemy>& Game::enemy_finder() {
-    return enemy_finder_;
-}
-
-Finder<Coin>& Game::coin_finder() {
-    return coin_finder_;
 }

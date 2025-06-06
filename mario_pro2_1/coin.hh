@@ -53,11 +53,7 @@ class Coin {
          */
         void update(pro2::Window& window);
 
-        bool message_shown() const { return message_shown_; }
-        void set_message_shown(bool v) { message_shown_ = v; }
-
     private:
-    bool message_shown_ = false; //para la queue
         static const std::vector<std::vector<std::vector<int>>> coin_sprites_;
 
 };
