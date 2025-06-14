@@ -8,13 +8,16 @@
 
 
 /**
- * @brief Clase que representa una moneda dentro del juego.
+ * @brief Clase que representa una moneda y sus acciones dentro del juego.
  */
 class Coin {
     private:
         pro2::Pt base_pos_;
         pro2::Pt pos_;
         bool collected_ = false;
+        bool message_shown_ = false; 
+        static const std::vector<std::vector<std::vector<int>>> coin_sprites_;
+
 
     public:
         //Constructora:
@@ -36,6 +39,21 @@ class Coin {
          */
         bool is_collected() const;
 
+         /**
+         * @brief inicializa la variable message_shown_ a un valor dado
+         * @param value un valor booleano
+         */
+        void set_message_shown(bool value) {
+            message_shown_ = value; 
+        }
+
+        /**
+         * @brief devuelve el valor de la variable message_shown_
+         */
+        bool message_shown() const {
+            return message_shown_; 
+        }
+
 
         //Modificadoras:
         /**
@@ -45,20 +63,17 @@ class Coin {
 
         /**
          * @brief Dibuja la moneda en la ventana.
+         * @param un window de pro2
          */
-        void paint(pro2::Window& window) const;
+        void paint(pro2::Window& window) const;   
 
         /**
          * @brief Actualiza el estado de la moneda (por ejemplo, animaciones).
+         * @param un window de pro2
          */
         void update(pro2::Window& window);
 
-        bool message_shown() const { return message_shown_; }
-        void set_message_shown(bool v) { message_shown_ = v; }
-
-    private:
-    bool message_shown_ = false; //para la queue
-        static const std::vector<std::vector<std::vector<int>>> coin_sprites_;
+       
 
 };
 

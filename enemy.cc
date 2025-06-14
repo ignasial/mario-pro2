@@ -27,7 +27,7 @@ const std::vector<std::vector<int>> Enemy::enemy_sprite_ = {
 
 
 Enemy::Enemy(pro2::Pt pos, int left_limit, int right_limit)
-    : pos_(pos), speed_({2, 0}), left_limit_(left_limit), right_limit_(right_limit)
+    : pos_(pos), speed_({1, 0}), left_limit_(left_limit), right_limit_(right_limit)
 {}
 
 void Enemy::update(pro2::Window& window) {

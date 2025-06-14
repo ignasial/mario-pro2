@@ -1,4 +1,4 @@
-#include "message_queue.hh"
+#include "message.hh"
 #include <iostream>
 
 void MessageQueue::push(const std::string& msg, int frame) {

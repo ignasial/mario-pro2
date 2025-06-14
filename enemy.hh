@@ -8,7 +8,7 @@
 
 
 /**
- * @brief clase que representa a los enemigos del juego
+ * @brief clase que representa a los enemigos del juego con su movimiento y todas sus acciones asociadas
  */
 class Enemy {
 private:
@@ -24,31 +24,38 @@ private:
     static const std::vector<std::vector<int>> enemy_sprite_;
 
 public:
+    //Constructora
     Enemy(pro2::Pt pos, int left_limit, int right_limit);
 
+
+    //Modificadoras
     /**
      * @brief actualiza la posicion del enemigo con un movimiento horizontal
-     * @param 
+     * @param un window de pro2
      */
     void update(pro2::Window& window);
-      /**
+
+    /**
      * @brief pinta el sprite del enemigo
+     * @param un window de pro2
      */
     void paint(pro2::Window& window) const;
-      /**
-     * @brief 
+
+    //Consultoras
+    /**
+     * @brief devuelve el valor de la variable alive_
      */
     bool is_alive() const {
         return alive_;
     }
-      /**
-     * @brief
+    /**
+     * @brief devuelve el valor de la variable pos_
      */
     pro2::Pt pos() const {
         return pos_;
     }
-      /**
-     * @brief
+    /**
+     * @brief obtiene el rectangulo del sprite que representa el enemigo
      */
     pro2::Rect get_rect() const;
 };

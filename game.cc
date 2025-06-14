@@ -3,45 +3,60 @@
 #include <iostream>
 #include <cstdlib>
 
-using namespace pro2;
+using namespace pro2;  
 using namespace std;
 
 Game::Game(int width, int height, int enemy_count)
-    : mario_({width / 2, 150}),
+    : mario_({200, 150}),
       platforms_{
-          Platform(100, 300, 250, 331),
-          Platform(0, 200, 250, 331),
-          Platform(250, 400, 250, 331)
+          Platform(150, 255, 240, 350),
+          Platform(930, 1100, 240, 350),
       },
       coins_{
-          Coin({200, 248})
+          Coin({215, 240}),
+          Coin({1005, 237}),
+          Coin({1015, 237}),
+          Coin({1040, 237}),
       },
       paused_(false),
       finished_(false),
       count_coin(0),
-      root_checkpoint_(nullptr),
-      current_checkpoint_(nullptr),
+      root_checkpoint_(NULL),
+      current_checkpoint_(NULL),
       current_frame_(0)
 {
-    add_checkpoint(600, 250);
-    add_checkpoint(900, 250);
+    add_checkpoint(625, 205);
+    add_checkpoint(825, 195);
+    add_checkpoint(800, 270);
+    add_checkpoint(1020, 240);
 
-    current_checkpoint_ = nullptr;
+    current_checkpoint_ = NULL;
     initial_position_ = mario_.pos();
 
     for (int i = 0; i < 3; ++i) {
         lives_.push(i);
     }
 
-    for (int i = 0; i < 40000; i++) {
-        platforms_.push_back(Platform(250 + i * 200, 470 + i * 200, 250, 331));
-        coins_.emplace_back(Coin({300 + i * 200, 249}));
+    /**
+     * CASO DE PRUEBA INTERESANTE: 
+     * -Entrada: probar con N muy grande
+     * -Comportamiento: se espera que el juego siga fluido
+     */
+    int N = 3;
+    for (int i = 0; i < N; i++) {
+        platforms_.push_back(Platform(330 + i*200, 480 + i *200, 215 - 10*i, 225 -10*i));
+        coins_.push_back(Coin({415 + i * 200, 213 - 10*i}));
+        
+    }
+    for (int i = 0; i < 3; ++i) {
+        platforms_.push_back(Platform(280 + i*200, 500 + i*200, 270, 350));
+        coins_.push_back(Coin({415 + i * 200, 267}));
     }
     for (int i = 0; i < enemy_count; ++i) {
-        int base_x = 400 + i * 100;
-        int left_limit = base_x - 30;
-        int right_limit = base_x + 30;
-        enemies_.emplace_back(Pt{base_x, 255}, left_limit, right_limit);
+        int base_x = 400 + i * 200;
+        int left_limit = base_x - 10;
+        int right_limit = base_x + 10;
+        enemies_.emplace_back(Pt{base_x, 220 - 10*i}, left_limit, right_limit);
         enemy_finder_.add(&enemies_.back());
     }
 
@@ -60,7 +75,7 @@ Game::~Game() {
 
 void Game::add_checkpoint(int x, int y) {
     Checkpoint* cp = new Checkpoint(x, y);
-    if (root_checkpoint_ == nullptr) {
+    if (root_checkpoint_ == NULL) {
         root_checkpoint_ = cp;
     } else {
         root_checkpoint_->insert(cp);
@@ -121,9 +136,9 @@ void Game::update_objects(pro2::Window& window) {
 
     mario_.update(window, platforms_);
 
-    if (root_checkpoint_ != nullptr) {
+    if (root_checkpoint_ != NULL) {
         Checkpoint* closest_cp = root_checkpoint_->find_closest(mario_.pos().x, mario_.pos().y);
-        if (closest_cp != nullptr) {
+        if (closest_cp != NULL) {
             Rect mario_rect = mario_.get_rect();
             Rect cp_rect = closest_cp->get_rect();
 
@@ -152,7 +167,7 @@ void Game::update_objects(pro2::Window& window) {
                 message_queue_.push("Moneda recogida, tienes " + std::to_string(count_coin) + " monedas.", 120);
                 coin_nc->set_message_shown(true);
             }
-}
+        }
 
         visible_coins_.insert(coin_nc);
     }
@@ -203,7 +218,7 @@ void Game::paint(pro2::Window& window) {
     for (const Enemy* e : visible_enemies_) {
         e->paint(window);
     }
-    if (root_checkpoint_ != nullptr) {
+    if (root_checkpoint_ != NULL) {
         root_checkpoint_->paint(window);
     }
 
@@ -213,7 +228,7 @@ void Game::paint(pro2::Window& window) {
 
 void Game::reset_mario(pro2::Window& window) {
     Pt respawn_pos = initial_position_;
-    if (current_checkpoint_ != nullptr) {
+    if (current_checkpoint_ !=  NULL) {
         respawn_pos = {current_checkpoint_->x, current_checkpoint_->y};
     }
 
@@ -231,11 +246,11 @@ void Game::reset_mario(pro2::Window& window) {
         lives_.pop();
     }
 
-    message_queue_.push("¡Has perdido una vida! Vidas restantes: " + std::to_string(lives_.size()), 120);
+    message_queue_.push("¡Has perdido una vida! Vidas restantes: " + std::to_string(lives_.size()));
 
     if (lives_.empty()) {
         finished_ = true;
-        message_queue_.push("GAME OVER: No te quedan vidas. Puntuación total: " + std::to_string(count_coin), 240);
+        message_queue_.push("GAME OVER: No te quedan vidas. Puntuación total: " + std::to_string(count_coin));
     }
 }
 
